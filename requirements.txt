@@ -1,0 +1,6 @@
+requests>=2.32.5
+discord>=2.6.4
+datetime
+os
+pillow
+io

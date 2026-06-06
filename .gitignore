@@ -1,0 +1,9 @@
+# Secrets api keys
+SECRETS.py
+
+# pycache files
+__pycache__/
+
+# not finished commands
+cogs/valstats.py
+cogs/lolstats.py
