@@ -40,6 +40,7 @@ class osuComands(commands.Cog):
         previous_usernames  = [username] + previous_usernames[0:] # add current username on top fo the current usernames
         profile_colour      = player_profile['profile_colour']
         avatar_url          = player_profile['avatar_url']
+        cover_url           = player_profile['cover_url']
         is_bot              = player_profile['is_bot']
         is_online           = player_profile['is_online']
         is_deleted          = player_profile['is_deleted']
@@ -65,7 +66,7 @@ class osuComands(commands.Cog):
         embed, file = embeds.get_osu_embed()
         embed.title = f'{emoji} Osu!{gamemode} information'
         embed.add_field(
-            name=f'{username} profile{' :wastebasket:' if is_deleted else ''}{' 🤖' if is_bot else ''}{' <:osu_supporter:1512764689476747458>' if is_supporter else ''}{' 🟢' if is_online else ' 🔴'}',
+            name=f'{username} profile{' :wastebasket:' if is_deleted else ''}{' :robot:' if is_bot else ''}{' <:osu_supporter:1512764689476747458>' if is_supporter else ''}{' :green_circle:' if is_online else ' :red_circle:'}',
             value=
             f'> Username: `{username}`'
             f'\n> User ID: `{user_id}`'
@@ -109,8 +110,16 @@ class osuComands(commands.Cog):
             value=username_history_str,
             inline=True
         )
+        embed.add_field(
+            name='',
+            value=f'https://osu.ppy.sh/users/{user_id}',
+            inline=False
+        )
         embed.set_thumbnail(
             url=avatar_url,
+        )
+        embed.set_image(
+            url=cover_url
         )
         await interaction.response.send_message(files=[file], embed=embed)
 

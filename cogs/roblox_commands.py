@@ -36,7 +36,7 @@ class robloxComands(commands.Cog):
         embed, file = embeds.get_roblox_embed()
         embed.title = f'Roblox information'
         embed.add_field(
-            name=f'{username} profile {'🚫' if is_banned else ''}{'<:verified_badge:1512510616093331517>' if has_verified_badge else ''}',
+            name=f'{username} profile {':no_entry_sign:' if is_banned else ''}{'<:verified_badge:1512510616093331517>' if has_verified_badge else ''}',
             value=f'> Username: `{username}`\n> Display Name: `{display_name}`\n> User ID: `{user_id}`\n> Account created: `{created_date}`\n> Description: ```{description}```',
             inline=True
         )
@@ -82,27 +82,27 @@ class robloxComands(commands.Cog):
                 self.back_button.disabled = self.index <= 0
                 self.next_button.disabled = self.index >= len(badge_list) - 1
                 self.full_next_button.disabled = self.index >= len(badge_list) - 1
-            @discord.ui.button(style=discord.ButtonStyle.blurple, emoji="⏮️", disabled=True)
+            @discord.ui.button(style=discord.ButtonStyle.blurple, emoji=":track_previous:", disabled=True)
             async def full_back_button(self, interaction: discord.Interaction, button: discord.Button):
                 self.index = 0
                 self._update_buttons()
                 embed, file = make_embed(self.index)
                 await interaction.response.edit_message(embed=embed, attachments=[file], view=self)
-            @discord.ui.button(style=discord.ButtonStyle.blurple, emoji="⏪", disabled=True)
+            @discord.ui.button(style=discord.ButtonStyle.blurple, emoji=":rewind:", disabled=True)
             async def back_button(self, interaction: discord.Interaction, button: discord.Button):
                 if self.index > 0:
                     self.index -= 1
                 self._update_buttons()
                 embed, file = make_embed(self.index)
                 await interaction.response.edit_message(embed=embed, attachments=[file], view=self)
-            @discord.ui.button(style=discord.ButtonStyle.blurple, emoji="⏩")
+            @discord.ui.button(style=discord.ButtonStyle.blurple, emoji=":fast_forward:")
             async def next_button(self, interaction: discord.Interaction, button: discord.Button):
                 if self.index < len(badge_list) - 1:
                     self.index += 1
                 self._update_buttons()
                 embed, file = make_embed(self.index)
                 await interaction.response.edit_message(embed=embed, attachments=[file], view=self)
-            @discord.ui.button(style=discord.ButtonStyle.blurple, emoji="⏭️")
+            @discord.ui.button(style=discord.ButtonStyle.blurple, emoji=":track_next:")
             async def full_next_button(self, interaction: discord.Interaction, button: discord.Button):
                 self.index = len(badge_list) - 1
                 self._update_buttons()
