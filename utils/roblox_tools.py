@@ -26,3 +26,21 @@ def get_player_username_history(username: str = None, userId: int = None, limit:
     if not userId:
         userId = get_player_profile(username)["id"]
     return get_api_data_json(f'https://users.roblox.com/v1/users/{userId}/username-history')
+
+def get_player_full_body(username: str = None, userId: int = None, size: str = '720x720', format: str = 'Png', isCircular: bool = False):
+    if username is None and userId is None: return
+    if not userId:
+        userId = get_player_profile(username)["id"]
+    return get_api_data_json(f'https://thumbnails.roblox.com/v1/users/avatar', params={'userIds': userId, 'size': size, 'format': format, 'isCircular': isCircular})
+
+def get_player_bust(username: str = None, userId: int = None, size: str = '420x420', format: str = 'Png', isCircular: bool = False):
+    if username is None and userId is None: return
+    if not userId:
+        userId = get_player_profile(username)["id"]
+    return get_api_data_json(f'https://thumbnails.roblox.com/v1/users/avatar-bust', params={'userIds': userId, 'size': size,  'format': format, 'isCircular': isCircular})
+
+def get_player_headshot(username: str = None, userId: int = None, size: str = '720x720', format: str = 'Png', isCircular: bool = False):
+    if username is None and userId is None: return
+    if not userId:
+        userId = get_player_profile(username)["id"]
+    return get_api_data_json(f'https://thumbnails.roblox.com/v1/users/avatar-headshot', params={'userIds': userId, 'size': size, 'format': format, 'isCircular': isCircular})
