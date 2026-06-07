@@ -24,13 +24,13 @@ class osuComands(commands.Cog):
         player_profile = osu_tools.get_player_profile(username, user_id, gamemode)
 
         # Change osu to standard and fruits to catch for good display
-        # Change emoji for given gamemode
-        emoji = '<:mania:1512849916706295818>'
+        # Change gamemode emoji for given gamemode
+        gamemode_emoji = '<:mania:1512849916706295818>'
         if gamemode == 'osu': 
             gamemode = 'standard'
-            emoji = '<:standard:1512849884313686107>'
-        elif gamemode == 'catch': emoji = '<:fruits:1512849871990952047>'
-        elif gamemode == 'taiko': emoji = '<:taiko:1512849895873052885>'
+            gamemode_emoji = '<:standard:1512849884313686107>'
+        elif gamemode == 'catch': gamemode_emoji = '<:fruits:1512849871990952047>'
+        elif gamemode == 'taiko': gamemode_emoji = '<:taiko:1512849895873052885>'
         
         follower_count  = player_profile['follower_count']
         playmode            = player_profile['playmode']
@@ -64,7 +64,7 @@ class osuComands(commands.Cog):
         best_updtat_date    = datetime.fromisoformat(best_updtat)
         
         embed, file = embeds.get_osu_embed()
-        embed.title = f'{emoji} Osu!{gamemode} information'
+        embed.title = f'{gamemode_emoji} Osu!{gamemode} information'
         embed.add_field(
             name=f'{username} profile{' :wastebasket:' if is_deleted else ''}{' :robot:' if is_bot else ''}{' <:osu_supporter:1512764689476747458>' if is_supporter else ''}{' :green_circle:' if is_online else ' :red_circle:'}',
             value=
