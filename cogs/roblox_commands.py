@@ -4,6 +4,9 @@ FUTURE COMMANDS:
 - get-promotion-channels(username, user_id):
     - not sure
     - show the affiliated channels of the player
+- roblox-get-outfit(username, user_id):
+    - show the user outfit
+    - show all items equiped
 '''
 import discord
 from discord import app_commands
@@ -21,17 +24,19 @@ class robloxComands(commands.Cog):
     async def roblox_info(self, interaction: discord.Interaction, username: str = None, user_id: int = None):
         if username is None and user_id is None: return
 
-        player_profile = roblox_tools.get_player_profile(username, user_id)
-
-        user_id = player_profile['id']
-        username = player_profile['name']
-        display_name = player_profile['displayName']
-        has_verified_badge = player_profile['hasVerifiedBadge']
-        is_banned = player_profile['isBanned']
-        description = player_profile['description']
+        player_profile      = roblox_tools.get_player_profile(username, user_id)
+        user_id             = player_profile['id']
+        username            = player_profile['name']
+        display_name        = player_profile['displayName']
+        has_verified_badge  = player_profile['hasVerifiedBadge']
+        is_banned           = player_profile['isBanned']
+        description         = player_profile['description']
         if description == '': description = None
-        created = player_profile['created']
-        created_date = datetime.fromisoformat(created)
+        created             = player_profile['created']
+        created_date        = datetime.fromisoformat(created)
+
+        player_thumbnail = roblox_tools.get_player_headshot(username, user_id)["data"][0]
+        thumbnail_url = player_thumbnail['imageUrl']
 
         embed, file = embeds.get_roblox_embed()
         embed.title = f'Roblox information'
@@ -48,6 +53,9 @@ class robloxComands(commands.Cog):
         embed.add_field(
             name='',
             value=f'https://roblox.com/users/{user_id}/profile'
+        )
+        embed.set_thumbnail(
+            url=thumbnail_url
         )
         await interaction.response.send_message(files=[file], embed=embed)
 
