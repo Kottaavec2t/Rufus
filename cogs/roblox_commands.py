@@ -42,7 +42,11 @@ class robloxComands(commands.Cog):
         embed.title = f'Roblox information'
         embed.add_field(
             name=f'{username} profile {':no_entry_sign:' if is_banned else ''}{'<:verified_badge:1512510616093331517>' if has_verified_badge else ''}',
-            value=f'> Username: `{username}`\n> Display Name: `{display_name}`\n> User ID: `{user_id}`\n> Account created: `{created_date}`\n> Description: ```{description}```',
+            value=f'> Username: `{username}`'
+            f'\n> Display Name: `{display_name}`'
+            f'\n> User ID: `{user_id}`'
+            f'\n> Account created: `{created_date}`'
+            f'\n> Description: ``` {description} ```', # keep spaces between discord format cause of link breaking the format
             inline=True
         )
         embed.add_field(
@@ -130,6 +134,210 @@ class robloxComands(commands.Cog):
 
         await interaction.response.send_message(embed=embeds.make_error_embed(error), ephemeral=True)
 
+    @app_commands.command(name='roblox-outfit', description='Show the outfit of a roblox player')
+    async def roblox_outfit(self, interaction: discord.Interaction, username: str = None, user_id: int = None):
+        if username is None and user_id is None: return
+        if not username: username = roblox_tools.get_player_profile(username, user_id)["data"][0]['name']
+
+        def make_embed(tab: str = 'info', index: int = None):
+            player_outfit = roblox_tools.get_player_full_body(username, user_id)["data"][0]
+            player_outfit_url = player_outfit['imageUrl']
+
+            embed, file = embeds.get_roblox_embed()
+            embed.title = f"{username}'s outfit"
+            embed.description = f'' # maybe robux cost ?
+            embed.set_thumbnail(
+                url=player_outfit_url
+            )
+
+            player_outfit_details = roblox_tools.get_ouftfit_details(username, user_id)
+
+            # tabs: info, assets, emotes
+            if tab == 'info':
+                height = player_outfit_details['scales']['height']
+                width = player_outfit_details['scales']['width']
+                head = player_outfit_details['scales']['head']
+                depth = player_outfit_details['scales']['depth']
+                embed.add_field(
+                    name='Scales',
+                    value=
+                    f'> Height: `{height}`'
+                    f'\n> Width: `{width}`'
+                    f'\n> Head: `{head}`'
+                    f'\n> Depth: `{depth}`',
+                    inline=True
+                )
+
+                return embed, file
+            
+            elif tab == 'assets':
+                assets = player_outfit_details['assets']
+                asset = assets[index]
+                name = asset['name']
+                id = asset['id']
+                asset_type = asset['assetType']['name']
+
+                asset_thumbnail = roblox_tools.get_asset_thumbnail(id)["data"][0]
+                asset_thumbnail_url = asset_thumbnail['imageUrl']
+                
+                embed.description = f'`{index+1}`/`{len(assets)}` Assets' # maybe robux cost ?
+                embed.add_field(
+                    name='',
+                    value=
+                    f'> Name: `{name}`'
+                    f'\n> Asset ID: `{id}`'
+                    f'\n> Type: `{asset_type}`',
+                    inline=True
+                )
+                embed.add_field(
+                    name='',
+                    value=f'https://www.roblox.com/catalog/{id}',
+                    inline=False
+                )
+                embed.set_image(
+                    url=asset_thumbnail_url
+                )
+                class NavigationButtons(discord.ui.View):
+                    def __init__(self, index: int = 0):
+                        super().__init__()
+                        self.index = index
+                        self._update_buttons()
+                    def _update_buttons(self):
+                        self.full_back_button.disabled = self.index <= 0
+                        self.back_button.disabled = self.index <= 0
+                        self.next_button.disabled = self.index >= len(assets) - 1
+                        self.full_next_button.disabled = self.index >= len(assets) - 1
+                    @discord.ui.button(style=discord.ButtonStyle.blurple, emoji="⏮️", disabled=True)
+                    async def full_back_button(self, interaction: discord.Interaction, button: discord.Button):
+                        self.index = 0
+                        self._update_buttons()
+                        embed, file, view = make_embed('assets', self.index)
+                        await interaction.response.edit_message(embed=embed, attachments=[file], view=self)
+                    @discord.ui.button(style=discord.ButtonStyle.blurple, emoji="⏪", disabled=True)
+                    async def back_button(self, interaction: discord.Interaction, button: discord.Button):
+                        if self.index > 0:
+                            self.index -= 1
+                        self._update_buttons()
+                        embed, file, view = make_embed('assets', self.index)
+                        await interaction.response.edit_message(embed=embed, attachments=[file], view=self)
+                    @discord.ui.button(style=discord.ButtonStyle.blurple, emoji="⏩")
+                    async def next_button(self, interaction: discord.Interaction, button: discord.Button):
+                        if self.index < len(assets) - 1:
+                            self.index += 1
+                        self._update_buttons()
+                        embed, file, view = make_embed('assets', self.index)
+                        await interaction.response.edit_message(embed=embed, attachments=[file], view=self)
+                    @discord.ui.button(style=discord.ButtonStyle.blurple, emoji="⏭️")
+                    async def full_next_button(self, interaction: discord.Interaction, button: discord.Button):
+                        self.index = len(assets) - 1
+                        self._update_buttons()
+                        embed, file, view = make_embed('assets', self.index)
+                        await interaction.response.edit_message(embed=embed, attachments=[file], view=self)
+                    @discord.ui.button(label='Back', style=discord.ButtonStyle.red, emoji="↩️")
+                    async def return_button(self, interaction: discord.Interaction, button: discord.Button):
+                        embed, file = make_embed()
+                        view = SelectionButtons()
+                        await interaction.response.edit_message(embed=embed, attachments=[file], view=view)
+                view = NavigationButtons()
+
+            elif tab == 'emotes':
+                emotes = player_outfit_details['emotes']
+                emote = emotes[index]
+                name = emote['assetName']
+                id = emote['assetId']
+
+                emote_thumbnail = roblox_tools.get_asset_thumbnail(id)["data"][0]
+                emote_thumbnail_url = emote_thumbnail['imageUrl']
+                
+                embed.description = f'`{index+1}`/`{len(emotes)}` Emotes' # maybe robux cost ?
+                embed.add_field(
+                    name='',
+                    value=
+                    f'> Name: `{name}`'
+                    f'\n> Asset ID: `{id}`',
+                    inline=True
+                )
+                embed.add_field(
+                    name='',
+                    value=f'https://www.roblox.com/catalog/{id}',
+                    inline=False
+                )
+                embed.set_image(
+                    url=emote_thumbnail_url
+                )
+                class NavigationButtons(discord.ui.View):
+                    def __init__(self, index: int = 0):
+                        super().__init__()
+                        self.index = index
+                        self._update_buttons()
+                    def _update_buttons(self):
+                        self.full_back_button.disabled = self.index <= 0
+                        self.back_button.disabled = self.index <= 0
+                        self.next_button.disabled = self.index >= len(emotes) - 1
+                        self.full_next_button.disabled = self.index >= len(emotes) - 1
+                    @discord.ui.button(style=discord.ButtonStyle.blurple, emoji="⏮️", disabled=True)
+                    async def full_back_button(self, interaction: discord.Interaction, button: discord.Button):
+                        self.index = 0
+                        self._update_buttons()
+                        embed, file, view = make_embed('emotes', self.index)
+                        await interaction.response.edit_message(embed=embed, attachments=[file], view=self)
+                    @discord.ui.button(style=discord.ButtonStyle.blurple, emoji="⏪", disabled=True)
+                    async def back_button(self, interaction: discord.Interaction, button: discord.Button):
+                        if self.index > 0:
+                            self.index -= 1
+                        self._update_buttons()
+                        embed, file, view = make_embed('emotes', self.index)
+                        await interaction.response.edit_message(embed=embed, attachments=[file], view=self)
+                    @discord.ui.button(style=discord.ButtonStyle.blurple, emoji="⏩")
+                    async def next_button(self, interaction: discord.Interaction, button: discord.Button):
+                        if self.index < len(emotes) - 1:
+                            self.index += 1
+                        self._update_buttons()
+                        embed, file, view = make_embed('emotes', self.index)
+                        await interaction.response.edit_message(embed=embed, attachments=[file], view=self)
+                    @discord.ui.button(style=discord.ButtonStyle.blurple, emoji="⏭️")
+                    async def full_next_button(self, interaction: discord.Interaction, button: discord.Button):
+                        self.index = len(emotes) - 1
+                        self._update_buttons()
+                        embed, file, view = make_embed('emotes', self.index)
+                        await interaction.response.edit_message(embed=embed, attachments=[file], view=self)
+                    @discord.ui.button(label='Back', style=discord.ButtonStyle.red, emoji="↩️")
+                    async def return_button(self, interaction: discord.Interaction, button: discord.Button):
+                        embed, file = make_embed()
+                        view = SelectionButtons()
+                        await interaction.response.edit_message(embed=embed, attachments=[file], view=view)
+                view = NavigationButtons()
+
+            return embed, file, view
+        
+        class SelectionButtons(discord.ui.View):
+            def __init__(self, tab: str = 'info'):
+                super().__init__()
+                self.tab = tab
+                self._update_buttons()
+            def _update_buttons(self):
+                self.assets_button.disabled = self.tab == 'assets'
+                self.emotes_button.disabled = self.tab == 'emotes'
+            @discord.ui.button(label='Assets', style=discord.ButtonStyle.red, emoji="👜", disabled=True)
+            async def assets_button(self, interaction: discord.Interaction, button: discord.Button):
+                self.tab = 'assets'
+                self._update_buttons()
+                embed, file, view = make_embed(self.tab, 0)
+                await interaction.response.edit_message(embed=embed, attachments=[file], view=view)
+            @discord.ui.button(label='Emotes', style=discord.ButtonStyle.green, emoji="🕺")
+            async def emotes_button(self, interaction: discord.Interaction, button: discord.Button):
+                self.tab = 'emotes'
+                self._update_buttons()
+                embed, file, view = make_embed(self.tab, 0)
+                await interaction.response.edit_message(embed=embed, attachments=[file], view=view)
+        embed, file = make_embed()
+        
+        await interaction.response.send_message(embed=embed, files=[file], view=SelectionButtons())
+
+    @roblox_outfit.error
+    async def say_error(self, interaction: discord.Interaction, error):
+
+        await interaction.response.send_message(embed=embeds.make_error_embed(error), ephemeral=True)
 
 async def setup(bot):
     await bot.add_cog(robloxComands(bot))
