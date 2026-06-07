@@ -86,27 +86,27 @@ class robloxComands(commands.Cog):
                 self.back_button.disabled = self.index <= 0
                 self.next_button.disabled = self.index >= len(badge_list) - 1
                 self.full_next_button.disabled = self.index >= len(badge_list) - 1
-            @discord.ui.button(style=discord.ButtonStyle.blurple, emoji=":track_previous:", disabled=True)
+            @discord.ui.button(style=discord.ButtonStyle.blurple, emoji="⏮️", disabled=True)
             async def full_back_button(self, interaction: discord.Interaction, button: discord.Button):
                 self.index = 0
                 self._update_buttons()
                 embed, file = make_embed(self.index)
                 await interaction.response.edit_message(embed=embed, attachments=[file], view=self)
-            @discord.ui.button(style=discord.ButtonStyle.blurple, emoji=":rewind:", disabled=True)
+            @discord.ui.button(style=discord.ButtonStyle.blurple, emoji="⏪", disabled=True)
             async def back_button(self, interaction: discord.Interaction, button: discord.Button):
                 if self.index > 0:
                     self.index -= 1
                 self._update_buttons()
                 embed, file = make_embed(self.index)
                 await interaction.response.edit_message(embed=embed, attachments=[file], view=self)
-            @discord.ui.button(style=discord.ButtonStyle.blurple, emoji=":fast_forward:")
+            @discord.ui.button(style=discord.ButtonStyle.blurple, emoji="⏩")
             async def next_button(self, interaction: discord.Interaction, button: discord.Button):
                 if self.index < len(badge_list) - 1:
                     self.index += 1
                 self._update_buttons()
                 embed, file = make_embed(self.index)
                 await interaction.response.edit_message(embed=embed, attachments=[file], view=self)
-            @discord.ui.button(style=discord.ButtonStyle.blurple, emoji=":track_next:")
+            @discord.ui.button(style=discord.ButtonStyle.blurple, emoji="⏭️")
             async def full_next_button(self, interaction: discord.Interaction, button: discord.Button):
                 self.index = len(badge_list) - 1
                 self._update_buttons()
