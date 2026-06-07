@@ -44,3 +44,14 @@ def get_player_headshot(username: str = None, userId: int = None, size: str = '7
     if not userId:
         userId = get_player_profile(username)["id"]
     return get_api_data_json(f'https://thumbnails.roblox.com/v1/users/avatar-headshot', params={'userIds': userId, 'size': size, 'format': format, 'isCircular': isCircular})
+
+def get_ouftfit_details(username: str = None, userId: int = None):
+    if username is None and userId is None: return
+    if not userId:
+        userId = get_player_profile(username)["id"]
+    return get_api_data_json(f'https://avatar.roblox.com/v1/users/{userId}/avatar')
+
+def get_asset_thumbnail(assetId: int = None, size: str = '700x700', format: str = 'Png', isCircular: bool = False):
+    if assetId is None: return
+    return get_api_data_json(f'https://thumbnails.roblox.com/v1/assets', params={'assetIds': assetId, 'returnPolicy': 'PlaceHolder', 'size': size, 'format': format, 'isCircular': isCircular})
+
