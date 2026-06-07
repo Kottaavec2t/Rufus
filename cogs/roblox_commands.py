@@ -45,6 +45,10 @@ class robloxComands(commands.Cog):
             value='not functional for now.',
             inline=False
         )
+        embed.add_field(
+            name='',
+            value=f'https://roblox.com/users/{user_id}/profile'
+        )
         await interaction.response.send_message(files=[file], embed=embed)
 
     @roblox_info.error
