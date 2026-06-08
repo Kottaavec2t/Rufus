@@ -66,7 +66,11 @@ class osuComands(commands.Cog):
         embed, file = embeds.get_osu_embed()
         embed.title = f'{gamemode_emoji} Osu!{gamemode} information'
         embed.add_field(
-            name=f'{username} profile{' :wastebasket:' if is_deleted else ''}{' :robot:' if is_bot else ''}{' <:osu_supporter:1512764689476747458>' if is_supporter else ''}{' :green_circle:' if is_online else ' :red_circle:'}',
+            name=f'{username} profile'
+            f'{' :wastebasket:' if is_deleted else ''}'
+            f'{' :robot:' if is_bot else ''}'
+            f'{' <:osu_supporter:1512764689476747458>' if is_supporter else ''}'
+            f'{' :green_circle:' if is_online else ' :red_circle:'}',
             value=
             f'> Username: `{username}`'
             f'\n> User ID: `{user_id}`'
