@@ -1,13 +1,3 @@
-'''
-FUTURE COMMANDS:
-
-- get-promotion-channels(username, user_id):
-    - not sure
-    - show the affiliated channels of the player
-- roblox-get-outfit(username, user_id):
-    - show the user outfit
-    - show all items equiped
-'''
 import discord
 from discord import app_commands
 from discord.ext import commands
@@ -40,43 +30,46 @@ class robloxComands(commands.Cog):
 
         # 0: Offline | 1: Online | 2: In Game | 3: In Studio | 4: Invisible
         player_presence     = roblox_tools.get_user_presence(username, user_id)
-        print(player_presence)
         user_presence_type  = player_presence['userPresences'][0]['userPresenceType']
         user_presence_emoji = ""
         if user_presence_type==0:
-            user_presence_emoji = ':red_circle:'
+            user_presence_emoji = ' :red_circle:'
         elif user_presence_type==1:
-            user_presence_emoji = 'blue_circle:'
+            user_presence_emoji = ' :blue_circle:'
         elif user_presence_type==2:
-            user_presence_emoji = ':green_circle:'
+            user_presence_emoji = ' :green_circle:'
         elif user_presence_type==3:
-            user_presence_emoji = '<:roblox_studio:1513253052084125736>'
+            user_presence_emoji = ' <:roblox_studio:1513253052084125736>'
         elif user_presence_type==4:
-            user_presence_emoji = ':white_circle:'
+            user_presence_emoji = ' :white_circle:'
 
+        premium = roblox_tools.get_user_premium_membership(username, user_id)
+
+        followers = roblox_tools.get_user_followers(username, user_id).get('count', 0)
+        followings = roblox_tools.get_user_followings(username, user_id).get('count', 0)
 
         embed, file = embeds.get_roblox_embed()
         embed.title = f'Roblox information'
+        embed.url = f'https://roblox.com/users/{user_id}/profile'
         embed.add_field(
             name=f'{username} profile'
             f'{' :no_entry_sign:' if is_banned else ''}'
             f'{' <:verified_badge:1512510616093331517>' if has_verified_badge else ''}'
+            f'{' <:roblox_premium:1513519712351551638>' if premium else ''}'
             f'{user_presence_emoji}',
-            value=f'> Username: `{username}`'
-            f'\n> Display Name: `{display_name}`'
-            f'\n> User ID: `{user_id}`'
-            f'\n> Account created: `{created_date}`'
-            f'\n> Description: ``` {description} ```', # keep spaces between discord format cause of link breaking the format
+            value=f'> **Username:** `{username}`'
+            f'\n> **Display Name:** `{display_name}`'
+            f'\n> **User ID:** `{user_id}`'
+            f'\n> **Followers:** `{followers}`'
+            f'\n> **Followings:** `{followings}`'
+            f'\n> **Account created:** `{created_date}`'
+            f'\n> **Description:** ``` {description} ```', # keep spaces between discord format cause of link breaking the format
             inline=True
         )
         embed.add_field(
             name='Username history',
             value='not functional for now.',
             inline=False
-        )
-        embed.add_field(
-            name='',
-            value=f'https://roblox.com/users/{user_id}/profile'
         )
         embed.set_thumbnail(
             url=thumbnail_url
