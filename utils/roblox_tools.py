@@ -1,7 +1,7 @@
 from .api_manager import get_api_data_json, post_api_data_json, get_api_data
 import SECRETS
 
-HEADER={'x-api-key': SECRETS.ROLBOX_API_KEY}
+HEADER={'Cookie': f'.ROBLOSECURITY={SECRETS.ROBLOX_COOKIE}', 'x-api-key': SECRETS.ROLBOX_API_KEY}
 
 def get_player_profile(username: str = None, userId: int = None, excludeBannedUsers: bool = False):
     if username is None and userId is None: return
@@ -68,16 +68,16 @@ def get_user_premium_membership(username: str = None, userId: int = None):
     if username is None and userId is None: return
     if not userId:
         userId = get_player_profile(username)["id"]
-    return get_api_data(f'https://premiumfeatures.roblox.com/v1/users/{userId}/validate-membership')
+    return get_api_data_json(f'https://premiumfeatures.roblox.com/v1/users/{userId}/validate-membership', headers=HEADER)
 
 def get_user_followers(username: str = None, userId: int = None):
     if username is None and userId is None: return
     if not userId:
         userId = get_player_profile(username)["id"]
-    return get_api_data(f'https://friends.roblox.com/v1/users/{userId}/followers/count')
+    return get_api_data_json(f'https://friends.roblox.com/v1/users/{userId}/followers/count', headers=HEADER)
 
-def get_user_premium_membership(username: str = None, userId: int = None):
+def get_user_followings(username: str = None, userId: int = None):
     if username is None and userId is None: return
     if not userId:
         userId = get_player_profile(username)["id"]
-    return get_api_data(f'https://friends.roblox.com/v1/users/{userId}/followings/count')
+    return get_api_data_json(f'https://friends.roblox.com/v1/users/{userId}/followings/count', headers=HEADER)
