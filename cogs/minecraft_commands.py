@@ -36,7 +36,9 @@ class minecraftCommands(commands.Cog):
         embed.title = f'Minecraft information'
         embed.add_field(
             name=f'{username} profile',
-            value=f'> Username: `{username}`\n> UUID: `{uuid}`',
+            value=
+            f'> **Username:** `{username}`'
+            f'\n> **UUID:** `{uuid}`',
             inline=True
         )
         embed.set_thumbnail(
@@ -44,7 +46,7 @@ class minecraftCommands(commands.Cog):
         )
         name_history_str = ''
         for i, name in enumerate(name_history):
-            name_history_str += f'{i+1}. `{name['name']}` {'(current)' if name['active'] else ''} {f'*{datetime.fromisoformat(name['changed_at']).strftime("%d/%m/%Y, %H:%M:%S")}*' if name['changed_at'] is not None else ''}\n'
+            name_history_str += f'> **{i+1}.** `{name['name']}` {'(current)' if name['active'] else ''} {f'*{datetime.fromisoformat(name['changed_at']).strftime("%d/%m/%Y, %H:%M:%S")}*' if name['changed_at'] is not None else ''}\n'
         embed.add_field(
             name='Username history',
             value=name_history_str,

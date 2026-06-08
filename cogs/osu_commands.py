@@ -65,6 +65,7 @@ class osuComands(commands.Cog):
         
         embed, file = embeds.get_osu_embed()
         embed.title = f'{gamemode_emoji} Osu!{gamemode} information'
+        embed.url = f'https://osu.ppy.sh/users/{user_id}'
         embed.add_field(
             name=f'{username} profile'
             f'{' :wastebasket:' if is_deleted else ''}'
@@ -72,43 +73,43 @@ class osuComands(commands.Cog):
             f'{' <:osu_supporter:1512764689476747458>' if is_supporter else ''}'
             f'{' :green_circle:' if is_online else ' :red_circle:'}',
             value=
-            f'> Username: `{username}`'
-            f'\n> User ID: `{user_id}`'
-            f'\n> Country: :flag_{country_code.lower()}: `{country}`'
-            f'{f'\n> Interests: `{interests}`' if interests is not None else ''}'
-            f'{f'\n> Occupation: `{occupation}`' if occupation is not None else ''}'
-            f'\n> Main: `{playmode}`'
-            f'\n> Followers: `{follower_count}`',
+            f'> **Username:** `{username}`'
+            f'\n> **User ID:** `{user_id}`'
+            f'\n> **Country:** :flag_{country_code.lower()}: `{country}`'
+            f'{f'\n> **Interests:** `{interests}`' if interests is not None else ''}'
+            f'{f'\n> **Occupation:** `{occupation}`' if occupation is not None else ''}'
+            f'\n> **Main:** `{playmode}`'
+            f'\n> **Followers:** `{follower_count}`',
             inline=True
         )
         embed.add_field(
             name=f'osu!{gamemode}',
             value=
-            f'\n> Play Count: `{play_count}`'
-            f'\n> PP: `{pp}`'
-            f'\n> Play time: `{play_time}`'
-            f'\n> Level: `{level} ({level_progress})`',
+            f'\n> **Play Count:** `{play_count}`'
+            f'\n> **PP:** `{pp}`'
+            f'\n> **Play time:** `{play_time}`'
+            f'\n> **Level:** `{level} ({level_progress})`',
             inline=True
         )
         embed.add_field(
             name='Rank',
             value=
-            f'> Global rank: `{global_rank}`'
-            f'\n> Best global rank: `{best_global_rank}` *{best_updtat_date}*'
-            f'\n> Country rank: `{country_rank}`',
+            f'> **Global rank:** `{global_rank}`'
+            f'\n> **Best global rank:** `{best_global_rank}` *{best_updtat_date}*'
+            f'\n> **Country rank:** `{country_rank}`',
             inline=False
         )
         embed.add_field(
             name='Grade counts',
             value=
-            f'> <:GradeSS:1512849863941951528> : `{ss}`'
-            f'\n> <:GradeS:1512849856757104852> : `{s}`'
-            f'\n> <:GradeA:1512849823613714463> : `{a}`',
+            f'> <:GradeSS:1512849863941951528> **:** `{ss}`'
+            f'\n> <:GradeS:1512849856757104852> **:** `{s}`'
+            f'\n> <:GradeA:1512849823613714463> **:** `{a}`',
             inline=True
         )
         username_history_str = ''
         for i in range(len(previous_usernames)):
-            username_history_str += f'{i+1}. `{previous_usernames[i]}` {'(current)' if i == 0 else ''}\n'
+            username_history_str += f'> **{i+1}.** `{previous_usernames[i]}` {'(current)' if i == 0 else ''}\n'
         embed.add_field(
             name='Username history',
             value=username_history_str,
