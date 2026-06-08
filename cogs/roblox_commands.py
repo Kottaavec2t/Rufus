@@ -35,13 +35,33 @@ class robloxComands(commands.Cog):
         created             = player_profile['created']
         created_date        = datetime.fromisoformat(created)
 
-        player_thumbnail = roblox_tools.get_player_headshot(username, user_id)["data"][0]
-        thumbnail_url = player_thumbnail['imageUrl']
+        player_thumbnail    = roblox_tools.get_player_headshot(username, user_id)["data"][0]
+        thumbnail_url       = player_thumbnail['imageUrl']
+
+        # 0: Offline | 1: Online | 2: In Game | 3: In Studio | 4: Invisible
+        player_presence     = roblox_tools.get_user_presence(username, user_id)
+        print(player_presence)
+        user_presence_type  = player_presence['userPresences'][0]['userPresenceType']
+        user_presence_emoji = ""
+        if user_presence_type==0:
+            user_presence_emoji = ':red_circle:'
+        elif user_presence_type==1:
+            user_presence_emoji = 'blue_circle:'
+        elif user_presence_type==2:
+            user_presence_emoji = ':green_circle:'
+        elif user_presence_type==3:
+            user_presence_emoji = '<:roblox_studio:1513253052084125736>'
+        elif user_presence_type==4:
+            user_presence_emoji = ':white_circle:'
+
 
         embed, file = embeds.get_roblox_embed()
         embed.title = f'Roblox information'
         embed.add_field(
-            name=f'{username} profile {':no_entry_sign:' if is_banned else ''}{'<:verified_badge:1512510616093331517>' if has_verified_badge else ''}',
+            name=f'{username} profile'
+            f'{' :no_entry_sign:' if is_banned else ''}'
+            f'{' <:verified_badge:1512510616093331517>' if has_verified_badge else ''}'
+            f'{user_presence_emoji}',
             value=f'> Username: `{username}`'
             f'\n> Display Name: `{display_name}`'
             f'\n> User ID: `{user_id}`'
