@@ -1,3 +1,5 @@
+.vscode
+
 # Secrets api keys
 SECRETS.py
 
@@ -7,3 +9,6 @@ __pycache__/
 # not finished commands
 cogs/valstats.py
 cogs/lolstats.py
+
+# Virtual environment
+.venv
