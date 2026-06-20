@@ -21,13 +21,10 @@ async def on_ready():
 	print("> User ID :", bot.user.id)
 	print("> Date :", datetime.datetime.now())
 	
-	await bot.load_extension(f'cogs.minecraft_commands')
-	await bot.load_extension(f'cogs.roblox_commands')
-	await bot.load_extension(f'cogs.osu_commands')
-	'''for filename in os.listdir("./cogs"):
+	for filename in os.listdir("./cogs"):
 		if filename.endswith(".py"):
 			if filename[:-3] not in ["view"]:
-				await bot.load_extension(f"cogs.{filename[:-3]}")'''
+				await bot.load_extension(f"cogs.{filename[:-3]}")
 
 	try:
 		synced = await bot.tree.sync()
