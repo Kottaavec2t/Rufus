@@ -30,10 +30,12 @@ def get_osu_embed():
     embed.timestamp = datetime.datetime.now()
     return embed, file
 
-def make_error_embed(error = None):
+def make_error_embed(error: Exception = None):
     embed = make_base_embed(discord.Color.red())
     embed.title = 'Error'
-    embed.description = '> An error has occured during the command execution.'
-    embed.add_field(name='', value=f'``` {error} ```')
+    if hasattr(error, 'message'):
+        embed.add_field(name='', value=f'{str(error.message)}')
+    else:
+        embed.add_field(name='', value=f'{str(error)}')
     embed.timestamp = datetime.datetime.now()
     return embed
