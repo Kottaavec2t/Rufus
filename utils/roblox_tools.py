@@ -11,7 +11,9 @@ def get_player_profile(username: str = None, userId: int = None, excludeBannedUs
             "usernames": [username],
             "excludeBannedUsers": excludeBannedUsers,
         }
-        userId = post_api_data_json(f'https://users.roblox.com/v1/usernames/users', json=json)["data"][0]['id']
+        data = post_api_data_json(f'https://users.roblox.com/v1/usernames/users', json=json).get("data", None)
+        if not data or data == []: return
+        userId = data[0].get('id')
     return get_api_data_json(f'https://users.roblox.com/v1/users/{userId}', headers=HEADER)
 
 def get_player_username_history(userId: int, limit: int = 10, cursor: str = None, sortOrder: str = 'Asc'):

@@ -4,7 +4,7 @@ from discord.ext import commands
 from datetime import datetime
 
 from templates import embeds
-from utils import roblox_tools
+from utils import roblox_tools, exceptions
 
 class robloxComands(commands.Cog):
     def __init__(self, bot):
@@ -12,24 +12,25 @@ class robloxComands(commands.Cog):
     
     @app_commands.command(name='roblox-info', description='Information about a roblox player')
     async def roblox_info(self, interaction: discord.Interaction, username: str = None, user_id: int = None):
-        if username is None and user_id is None: return
+        if username is None and user_id is None: raise exceptions.InvalidInputException('You must give an **user_id** or an **username**')
 
         player_profile      = roblox_tools.get_player_profile(username, user_id)
-        user_id             = player_profile['id']
-        username            = player_profile['name']
-        display_name        = player_profile['displayName']
-        has_verified_badge  = player_profile['hasVerifiedBadge']
-        is_banned           = player_profile['isBanned']
-        description         = player_profile['description']
+        if not player_profile: raise exceptions.PlayerNotFoundException(f'User **{username}** not found')
+        user_id             = player_profile.get('id', None)
+        username            = player_profile.get('name', None)
+        display_name        = player_profile.get('displayName', None)
+        has_verified_badge  = player_profile.get('hasVerifiedBadge', None)
+        is_banned           = player_profile.get('isBanned', None)
+        description         = player_profile.get('description', None)
         if description == '': description = None
-        created             = player_profile['created']
+        created             = player_profile.get('created', None)
         created_date        = datetime.fromisoformat(created)
 
-        player_thumbnail    = roblox_tools.get_player_headshot(username, user_id)["data"][0]
+        player_thumbnail    = roblox_tools.get_player_headshot(user_id)["data"][0]
         thumbnail_url       = player_thumbnail['imageUrl']
 
         # 0: Offline | 1: Online | 2: In Game | 3: In Studio | 4: Invisible
-        player_presence     = roblox_tools.get_user_presence(username, user_id)
+        player_presence     = roblox_tools.get_user_presence(user_id)
         user_presence_type  = player_presence['userPresences'][0]['userPresenceType']
         user_presence_emoji = ""
         if user_presence_type==0:
@@ -43,10 +44,10 @@ class robloxComands(commands.Cog):
         elif user_presence_type==4:
             user_presence_emoji = ' :white_circle:'
 
-        premium = roblox_tools.get_user_premium_membership(username, user_id)
+        premium = roblox_tools.get_user_premium_membership(user_id)
 
-        followers = roblox_tools.get_user_followers(username, user_id).get('count', 0)
-        followings = roblox_tools.get_user_followings(username, user_id).get('count', 0)
+        followers = roblox_tools.get_user_followers(user_id).get('count', 0)
+        followings = roblox_tools.get_user_followings(user_id).get('count', 0)
 
         embed, file = embeds.get_roblox_embed()
         embed.title = f'Roblox information'
@@ -84,8 +85,12 @@ class robloxComands(commands.Cog):
     @app_commands.command(name='roblox-badges', description='Show all the badges own by a roblox player')
     async def roblox_badges(self, interaction: discord.Interaction, username: str = None, user_id: int = None):
         if username is None and user_id is None: return
-        if not username: username = roblox_tools.get_player_profile(username, user_id)["data"][0]['name']
-        badge_list = roblox_tools.get_player_badges(username, user_id)
+        if not username or not user_id:
+            player_profile = roblox_tools.get_player_profile(username, user_id)
+            user_id = player_profile.get('id', None)
+            username = player_profile.get('name', None)
+
+        badge_list = roblox_tools.get_player_badges(user_id)
 
         def make_embed(index: int):
 
@@ -153,7 +158,7 @@ class robloxComands(commands.Cog):
         if not username: username = roblox_tools.get_player_profile(username, user_id)["data"][0]['name']
 
         def make_embed(tab: str = 'info', index: int = None):
-            player_outfit = roblox_tools.get_player_full_body(username, user_id)["data"][0]
+            player_outfit = roblox_tools.get_player_full_body(user_id)["data"][0]
             player_outfit_url = player_outfit['imageUrl']
 
             embed, file = embeds.get_roblox_embed()
@@ -163,7 +168,7 @@ class robloxComands(commands.Cog):
                 url=player_outfit_url
             )
 
-            player_outfit_details = roblox_tools.get_ouftfit_details(username, user_id)
+            player_outfit_details = roblox_tools.get_ouftfit_details(user_id)
 
             # tabs: info, assets, emotes
             if tab == 'info':
@@ -187,10 +192,10 @@ class robloxComands(commands.Cog):
                 assets = player_outfit_details['assets']
                 asset = assets[index]
                 name = asset['name']
-                id = asset['id']
+                asset_id = asset['id']
                 asset_type = asset['assetType']['name']
 
-                asset_thumbnail = roblox_tools.get_asset_thumbnail(id)["data"][0]
+                asset_thumbnail = roblox_tools.get_asset_thumbnail(asset_id)["data"][0]
                 asset_thumbnail_url = asset_thumbnail['imageUrl']
                 
                 embed.description = f'`{index+1}`/`{len(assets)}` Assets' # maybe robux cost ?
@@ -198,13 +203,13 @@ class robloxComands(commands.Cog):
                     name='',
                     value=
                     f'> Name: `{name}`'
-                    f'\n> Asset ID: `{id}`'
+                    f'\n> Asset ID: `{asset_id}`'
                     f'\n> Type: `{asset_type}`',
                     inline=True
                 )
                 embed.add_field(
                     name='',
-                    value=f'https://www.roblox.com/catalog/{id}',
+                    value=f'https://www.roblox.com/catalog/{asset_id}',
                     inline=False
                 )
                 embed.set_image(
@@ -257,9 +262,9 @@ class robloxComands(commands.Cog):
                 emotes = player_outfit_details['emotes']
                 emote = emotes[index]
                 name = emote['assetName']
-                id = emote['assetId']
+                asset_id = emote['assetId']
 
-                emote_thumbnail = roblox_tools.get_asset_thumbnail(id)["data"][0]
+                emote_thumbnail = roblox_tools.get_asset_thumbnail(asset_id)["data"][0]
                 emote_thumbnail_url = emote_thumbnail['imageUrl']
                 
                 embed.description = f'`{index+1}`/`{len(emotes)}` Emotes' # maybe robux cost ?
@@ -267,12 +272,12 @@ class robloxComands(commands.Cog):
                     name='',
                     value=
                     f'> Name: `{name}`'
-                    f'\n> Asset ID: `{id}`',
+                    f'\n> Asset ID: `{asset_id}`',
                     inline=True
                 )
                 embed.add_field(
                     name='',
-                    value=f'https://www.roblox.com/catalog/{id}',
+                    value=f'https://www.roblox.com/catalog/{asset_id}',
                     inline=False
                 )
                 embed.set_image(
