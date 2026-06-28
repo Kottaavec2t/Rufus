@@ -11,15 +11,9 @@ def get_api_data(url: str, headers: dict = None, params: dict = None):
     except Exception as e:
         print(f"An error occurred: {e}")
 
-def get_api_data_json(url: str, headers: dict = None, params: dict = None):
-    return get_api_data(url, headers=headers, params=params).json()
-
-def get_api_data_image(url: str, headers: dict = None, params: dict = None):
-    return get_api_data(url, headers=headers, params=params).content
-
-def post_api_data(url: str, json: dict = None):
+def post_api_data(url: str, json: dict = None, data: dict = None, headers: dict = None):
     try:
-        response = requests.post(url, json=json)
+        response = requests.post(url, json=json, data=data, headers=headers)
         response.raise_for_status()
         return response
     
@@ -27,6 +21,3 @@ def post_api_data(url: str, json: dict = None):
         print(f"HTTP error occurred: {http_e}")
     except Exception as e:
         print(f"An error occurred: {e}")
-
-def post_api_data_json(url: str, json: dict = None):
-    return post_api_data(url, json=json).json()
