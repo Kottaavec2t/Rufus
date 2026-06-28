@@ -3,7 +3,7 @@ import datetime
 
 def make_base_embed(color: discord.Color = None):
     embed = discord.Embed()
-    embed.set_footer(text="© • Rufus • @kottaavec2t")
+    embed.set_footer(text="© Rufus • @kottaavec2t")
     if color is not None:
         embed.color = color
     embed.timestamp = datetime.datetime.now()
@@ -27,6 +27,13 @@ def get_osu_embed():
     embed = make_base_embed(discord.Color.pink())
     embed.set_author(name="Osu!", icon_url="attachment://osu.png")
     file = discord.File("./img/logo/osu.png")
+    embed.timestamp = datetime.datetime.now()
+    return embed, file
+
+def get_gd_embed():
+    embed = make_base_embed(discord.Color.yellow())
+    embed.set_author(name="Geomtry Dash", icon_url="attachment://gd.png")
+    file = discord.File("./img/logo/gd.png")
     embed.timestamp = datetime.datetime.now()
     return embed, file
 
