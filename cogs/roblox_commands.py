@@ -51,7 +51,7 @@ class robloxComands(commands.Cog):
 
         embed, file = embeds.get_roblox_embed()
         embed.title = f'Roblox information'
-        embed.url = f'https://roblox.com/users/{user_id}/profile'
+        embed.url   = f'https://roblox.com/users/{user_id}/profile'
         embed.add_field(
             name=f'{username} profile'
             f'{' :no_entry_sign:' if is_banned else ''}'
@@ -155,11 +155,12 @@ class robloxComands(commands.Cog):
     @app_commands.command(name='roblox-outfit', description='Show the outfit of a roblox player')
     async def roblox_outfit(self, interaction: discord.Interaction, username: str = None, user_id: int = None):
         if username is None and user_id is None: return
-        if not username: username = roblox_tools.get_player_profile(username, user_id)["data"][0]['name']
-
+        if not username: username = roblox_tools.get_player_profile(username, user_id).get('name', None)
+        if not user_id: user_id = roblox_tools.get_player_profile(username, user_id).get('id', None)
+        
+        player_outfit = roblox_tools.get_player_full_body(user_id)["data"][0]
+        player_outfit_url = player_outfit['imageUrl']
         def make_embed(tab: str = 'info', index: int = None):
-            player_outfit = roblox_tools.get_player_full_body(user_id)["data"][0]
-            player_outfit_url = player_outfit['imageUrl']
 
             embed, file = embeds.get_roblox_embed()
             embed.title = f"{username}'s outfit"

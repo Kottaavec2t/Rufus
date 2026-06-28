@@ -65,7 +65,7 @@ class osuComands(commands.Cog):
         
         embed, file = embeds.get_osu_embed()
         embed.title = f'{gamemode_emoji} Osu!{gamemode} information'
-        embed.url = f'https://osu.ppy.sh/users/{user_id}'
+        embed.url   = f'https://osu.ppy.sh/users/{user_id}'
         embed.add_field(
             name=f'{username} profile'
             f'{' :wastebasket:' if is_deleted else ''}'
@@ -102,9 +102,9 @@ class osuComands(commands.Cog):
         embed.add_field(
             name='Grade counts',
             value=
-            f'> <:GradeSS:1512849863941951528> **:** `{ss}`'
-            f'\n> <:GradeS:1512849856757104852> **:** `{s}`'
-            f'\n> <:GradeA:1512849823613714463> **:** `{a}`',
+            f'> <:ss_grade:1512849863941951528> **:** `{ss}`'
+            f'\n> <:s_grade:1512849856757104852> **:** `{s}`'
+            f'\n> <:a_grade:1512849823613714463> **:** `{a}`',
             inline=True
         )
         username_history_str = ''
@@ -114,11 +114,6 @@ class osuComands(commands.Cog):
             name='Username history',
             value=username_history_str,
             inline=True
-        )
-        embed.add_field(
-            name='',
-            value=f'https://osu.ppy.sh/users/{user_id}',
-            inline=False
         )
         embed.set_thumbnail(
             url=avatar_url,
