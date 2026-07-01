@@ -1,4 +1,4 @@
-def to_dict(text: str) -> list[dict]:
+def to_dict(text: str) -> list[dict[str, str]]:
     result_list = []
     value_dict = text.split('|')
     for i in range(len(value_dict)):
@@ -16,7 +16,7 @@ def to_dict(text: str) -> list[dict]:
         result_list.append(result_dict)
     return result_list
 
-def to_dict_song(text: str) -> list[dict]:
+def to_dict_song(text: str) -> list[dict[str, str]]:
     result_list = []
     value_dict = text.split(':')
     for i in range(len(value_dict)):
