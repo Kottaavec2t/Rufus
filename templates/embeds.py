@@ -40,9 +40,10 @@ def get_gd_embed():
 def make_error_embed(error: Exception = None):
     embed = make_base_embed(discord.Color.red())
     embed.title = 'Error'
-    if hasattr(error, 'message'):
-        embed.add_field(name='', value=f'{str(error.message)}')
-    else:
-        embed.add_field(name='', value=f'{str(error)}')
+
+    original_error = getattr(error, 'original', error)
+    error_message = getattr(original_error, 'message', str(original_error))
+
+    embed.add_field(name='', value=error_message)
     embed.timestamp = datetime.datetime.now()
     return embed

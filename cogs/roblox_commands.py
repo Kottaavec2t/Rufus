@@ -3,19 +3,19 @@ from discord import app_commands
 from discord.ext import commands
 from datetime import datetime
 
-from templates import embeds
-from utils import roblox_tools, exceptions
+from templates import embeds, exceptions
+from utils import roblox_tools
 
 class robloxComands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-    
+
     @app_commands.command(name='roblox-info', description='Information about a roblox player')
     async def roblox_info(self, interaction: discord.Interaction, username: str = None, user_id: int = None):
-        if username is None and user_id is None: raise exceptions.InvalidInputException('You must give an **user_id** or an **username**')
+        if username is None and user_id is None: raise exceptions.InvalidInputException('You must provide an **user_id** or an **username**')
 
         player_profile      = roblox_tools.get_player_profile(username, user_id)
-        if not player_profile: raise exceptions.PlayerNotFoundException(f'User **{username}** not found')
+        if not player_profile: raise exceptions.PlayerNotFoundException(username)
         user_id             = player_profile.get('id', None)
         username            = player_profile.get('name', None)
         display_name        = player_profile.get('displayName', None)
@@ -77,18 +77,17 @@ class robloxComands(commands.Cog):
         )
         await interaction.response.send_message(files=[file], embed=embed)
 
-    @roblox_info.error
-    async def say_error(self, interaction: discord.Interaction, error):
-
-        await interaction.response.send_message(embed=embeds.make_error_embed(error), ephemeral=True)
-
     @app_commands.command(name='roblox-badges', description='Show all the badges own by a roblox player')
     async def roblox_badges(self, interaction: discord.Interaction, username: str = None, user_id: int = None):
-        if username is None and user_id is None: return
-        if not username or not user_id:
+        if username is None and user_id is None: raise exceptions.InvalidInputException('You must provide an **user_id** or an **username**')
+        if not username:
             player_profile = roblox_tools.get_player_profile(username, user_id)
-            user_id = player_profile.get('id', None)
+            if not player_profile: raise exceptions.PlayerNotFoundException(username)
             username = player_profile.get('name', None)
+        if not user_id:
+            player_profile = roblox_tools.get_player_profile(username, user_id)
+            if not player_profile: raise exceptions.PlayerNotFoundException(username)
+            user_id = player_profile.get('id', None)
 
         badge_list = roblox_tools.get_player_badges(user_id)
 
@@ -105,7 +104,7 @@ class robloxComands(commands.Cog):
                 url=badge_list[index]['imageUrl']
             )
             return embed, file
-        
+
         class NavigationButtons(discord.ui.View):
             def __init__(self, index: int = 0):
                 super().__init__()
@@ -147,17 +146,18 @@ class robloxComands(commands.Cog):
 
         await interaction.response.send_message(embed=embed, files=[file], view=NavigationButtons())
 
-    @roblox_badges.error
-    async def say_error(self, interaction: discord.Interaction, error):
-
-        await interaction.response.send_message(embed=embeds.make_error_embed(error), ephemeral=True)
-
     @app_commands.command(name='roblox-outfit', description='Show the outfit of a roblox player')
     async def roblox_outfit(self, interaction: discord.Interaction, username: str = None, user_id: int = None):
-        if username is None and user_id is None: return
-        if not username: username = roblox_tools.get_player_profile(username, user_id).get('name', None)
-        if not user_id: user_id = roblox_tools.get_player_profile(username, user_id).get('id', None)
-        
+        if username is None and user_id is None: raise exceptions.InvalidInputException('You must provide an **user_id** or an **username**')
+        if not username:
+            player_profile = roblox_tools.get_player_profile(username, user_id)
+            if not player_profile: raise exceptions.PlayerNotFoundException(username)
+            username = player_profile.get('name', None)
+        if not user_id:
+            player_profile = roblox_tools.get_player_profile(username, user_id)
+            if not player_profile: raise exceptions.PlayerNotFoundException(username)
+            user_id = player_profile.get('id', None)
+
         player_outfit = roblox_tools.get_player_full_body(user_id)["data"][0]
         player_outfit_url = player_outfit['imageUrl']
         def make_embed(tab: str = 'info', index: int = None):
@@ -188,7 +188,7 @@ class robloxComands(commands.Cog):
                 )
 
                 return embed, file
-            
+
             elif tab == 'assets':
                 assets = player_outfit_details['assets']
                 asset = assets[index]
@@ -198,7 +198,7 @@ class robloxComands(commands.Cog):
 
                 asset_thumbnail = roblox_tools.get_asset_thumbnail(asset_id)["data"][0]
                 asset_thumbnail_url = asset_thumbnail['imageUrl']
-                
+
                 embed.description = f'`{index+1}`/`{len(assets)}` Assets' # maybe robux cost ?
                 embed.add_field(
                     name='',
@@ -267,7 +267,7 @@ class robloxComands(commands.Cog):
 
                 emote_thumbnail = roblox_tools.get_asset_thumbnail(asset_id)["data"][0]
                 emote_thumbnail_url = emote_thumbnail['imageUrl']
-                
+
                 embed.description = f'`{index+1}`/`{len(emotes)}` Emotes' # maybe robux cost ?
                 embed.add_field(
                     name='',
@@ -328,7 +328,7 @@ class robloxComands(commands.Cog):
                 view = NavigationButtons()
 
             return embed, file, view
-        
+
         class SelectionButtons(discord.ui.View):
             def __init__(self, tab: str = 'info'):
                 super().__init__()
@@ -350,9 +350,11 @@ class robloxComands(commands.Cog):
                 embed, file, view = make_embed(self.tab, 0)
                 await interaction.response.edit_message(embed=embed, attachments=[file], view=view)
         embed, file = make_embed()
-        
+
         await interaction.response.send_message(embed=embed, files=[file], view=SelectionButtons())
 
+    @roblox_info.error
+    @roblox_badges.error
     @roblox_outfit.error
     async def say_error(self, interaction: discord.Interaction, error):
 
@@ -360,4 +362,3 @@ class robloxComands(commands.Cog):
 
 async def setup(bot):
     await bot.add_cog(robloxComands(bot))
-
