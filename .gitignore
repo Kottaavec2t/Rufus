@@ -1,4 +1,6 @@
+# Editor files
 .vscode
+.zed
 
 # Secrets api keys
 SECRETS.py
