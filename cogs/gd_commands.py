@@ -4,19 +4,23 @@ from discord.ext import commands
 from datetime import datetime
 import base64
 
-from templates import embeds, emojis
+from templates import embeds, emojis, exceptions
 from utils import gd_formatter, gd_tools
 
 class gdComands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-    
+
     @app_commands.command(name='gd-info', description='Information about a Geometry Dash player')
+    @app_commands.describe(username='The user name')
+    @app_commands.describe(user_id='The user id')
+    @app_commands.describe(account_id='The account id')
     async def gd_info(self, interaction: discord.Interaction, username: str = None, user_id: int = None, account_id: int = None):
-        if username is None and account_id is None: return
+        if username is None and account_id is None and account_id is None: raise exceptions.InvalidInputException('You must provide an **username** or an **user_id** or an **account_id**')
 
         # DOC: https://wyliemaster.github.io/gddocs/#/resources/server/user
         player_profile  = gd_formatter.to_dict(gd_tools.get_player_profile(username=username, user_id=user_id, account_id=account_id))[0]
+        if not player_profile: raise exceptions.UserNotFoundException(username, user_id)
 
         username        = player_profile.get('1', None)
         user_id         = player_profile.get('2', None)
@@ -31,8 +35,8 @@ class gdComands(commands.Cog):
         elif mod_level == 3: # Not documented but i think it has a 4th code for lb mods (there is no 4th one but maybe one day)
             mod_level_emoji = emojis.emoji_dict.get('leaderboard_mod')
 
-        demons          = player_profile.get('4', None)
-        creator_points  = player_profile.get('8', None)
+        demons          = player_profile.get('4', 0)
+        creator_points  = player_profile.get('8', 0)
         global_rank     = int(player_profile.get('30', None))
         global_rank_emoji = emojis.emoji_dict.get('lb_trophy_11')
         if global_rank == 0:
@@ -149,27 +153,26 @@ class gdComands(commands.Cog):
             embed.add_field(
                 name="",
                 value=(
-                    f"[{emojis.emoji_dict.get('youtube')}](https://www.youtube.com/channel/{youtube}) " if youtube else ""
-                    f"[{emojis.emoji_dict.get('twitter')}](https://x.com/{twitter}) " if twitter else ""
-                    f"[{emojis.emoji_dict.get('twitch')}](https://www.twitch.tv/{twitch}) " if twitch else ""
-                    f"[{emojis.emoji_dict.get('instagram')}](https://www.instagram.com/{instagram}) " if instagram else ""
-                    f"[{emojis.emoji_dict.get('tiktok')}](https://www.tiktok.com/@{tiktok}) " if tiktok else ""
+                    f'{f"[{emojis.emoji_dict.get('youtube')}](https://www.youtube.com/channel/{youtube}) " if youtube else ""}'
+                    f'{f"[{emojis.emoji_dict.get('twitter')}](https://x.com/{twitter}) " if twitter else ""}'
+                    f'{f"[{emojis.emoji_dict.get('twitch')}](https://www.twitch.tv/{twitch}) " if twitch else ""}'
+                    f'{f"[{emojis.emoji_dict.get('instagram')}](https://www.instagram.com/{instagram}) " if instagram else ""}'
+                    f'{f"[{emojis.emoji_dict.get('tiktok')}](https://www.tiktok.com/@{tiktok}) " if tiktok else ""}'
                 ),
                 inline=False
             )
         await interaction.response.send_message(files=[file], embed=embed)
 
-    @gd_info.error
-    async def say_error(self, interaction: discord.Interaction, error):
-
-        await interaction.response.send_message(embed=embeds.make_error_embed(error), ephemeral=True)
-
     @app_commands.command(name='gd-icons', description='Show icons of a Geometry Dash player')
+    @app_commands.describe(username='The user name')
+    @app_commands.describe(user_id='The user id')
+    @app_commands.describe(account_id='The account id')
     async def gd_icons(self, interaction: discord.Interaction, username: str = None, user_id: int = None, account_id: int = None):
-        if username is None and user_id is None: return
+        if username is None and user_id is None and account_id is None: raise exceptions.InvalidInputException('You must provide an **username** or an **user_id** or an **account_id**')
 
         # DOC: https://wyliemaster.github.io/gddocs/#/resources/server/user
         player_profile  = gd_formatter.to_dict(gd_tools.get_player_profile(username, user_id, account_id))[0]
+        if not player_profile: raise exceptions.UserNotFoundException(username, user_id if user_id else account_id)
 
         username        = player_profile.get('1', None)
         user_id         = player_profile.get('2', None)
@@ -263,18 +266,16 @@ class gdComands(commands.Cog):
         embed, file = make_embed(0)
         await interaction.response.send_message(files=[file], embed=embed, view=NavigationButtons())
 
-    @gd_icons.error
-    async def say_error(self, interaction: discord.Interaction, error):
-
-        await interaction.response.send_message(embed=embeds.make_error_embed(error), ephemeral=True)
-
     @app_commands.command(name='gd-level-info', description='Information about a Geometry Dash level')
+    @app_commands.describe(level_id='The level id')
     async def gd_level_info(self, interaction: discord.Interaction, level_id: int):
-        
+        if level_id is None: raise exceptions.InvalidInputException('You must provide a **level_id**')
+
         # DOC: https://wyliemaster.github.io/gddocs/#/resources/server/level
         # DOC: https://wyliemaster.github.io/gddocs/#/resources/server/user
         # DOC: https://wyliemaster.github.io/gddocs/#/resources/server/song
         level_profile   = gd_formatter.to_dict(gd_tools.get_level_data(level_id))[0]
+        if not level_profile: raise exceptions.LevelNotFoundException(level_id)
 
         level_id        = level_profile.get('1', None)
         original_level_id = level_profile.get('30', None)
@@ -397,11 +398,11 @@ class gdComands(commands.Cog):
             lenght_name = 'XL'
         elif lenght == 5: # Platformer
             lenght_name = 'Platformer'
-            
+
         downloads       = level_profile.get('10', None)
         likes           = level_profile.get('14', None)
         stars           = level_profile.get('18', None)
-        
+
         creator_id      = level_profile.get('6', None)
         creator_profile = gd_formatter.to_dict(gd_tools.get_player_profile(user_id=creator_id))[0]
         creator_name    = creator_profile.get('1', None)
@@ -414,7 +415,7 @@ class gdComands(commands.Cog):
         coins_number    = int(level_profile.get('37', None))
         coins_verified  = int(level_profile.get('38', None)) # 0 or 1
         coins_emoji     = '<:user_coins:1520060202559209583>' if coins_verified==1 else '<:user_coins_unverified:1520750888363233311>'
-        
+
         embed, file = embeds.get_gd_embed()
         embed.title = f'Geometry Dash level information'
         embed.url   = f'https://gdbrowser.com/{level_id}'
@@ -434,7 +435,7 @@ class gdComands(commands.Cog):
                 f"\n> {emojis.emoji_dict.get('like')} **:** `{likes}`"
                 f"\n> {emojis.emoji_dict.get('star')} **:** `{stars}`"
                 f"\n> {emojis.emoji_dict.get('time')} **:** `{lenght_name}`"
-                f"\n> **Description:** ```{base64.b64decode(description).decode('utf-8') if description else 'None'}```"
+                f"\n> **Description:** ```{base64.b64decode(description).decode('utf-8') if description else 'None'} ```"
             ),
             inline=True
         )
@@ -450,11 +451,12 @@ class gdComands(commands.Cog):
         )
         await interaction.response.send_message(files=[file], embed=embed)
 
+    @gd_info.error
+    @gd_icons.error
     @gd_level_info.error
     async def say_error(self, interaction: discord.Interaction, error):
-        
+
         await interaction.response.send_message(embed=embeds.make_error_embed(error), ephemeral=True)
 
 async def setup(bot):
     await bot.add_cog(gdComands(bot))
-

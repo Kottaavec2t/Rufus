@@ -5,33 +5,38 @@ FUTURE COMMANDS:
     - show all icons with associated value
 - osu-achievements
 '''
+
 import discord
 from discord import app_commands
 from discord.ext import commands
 from datetime import datetime
 
-from templates import embeds
+from templates import embeds, exceptions
 from utils import osu_tools
 
 class osuComands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-    
+
     @app_commands.command(name='osu-info', description='Information about an Osu! player')
+    @app_commands.describe(username='The user name')
+    @app_commands.describe(user_id='The user id')
+    @app_commands.describe(gamemode='The gamemode you want the info (osu, catch, taiko, mania)')
     async def osu_info(self, interaction: discord.Interaction, username: str = None, user_id: int = None, gamemode: str = 'osu'):
-        if username is None and user_id is None: return
+        if username is None and user_id is None: raise exceptions.InvalidInputException('You must provide an **username** or an **user_id**')
 
         player_profile = osu_tools.get_player_profile(username, user_id, gamemode)
+        if not player_profile: raise exceptions.UserNotFoundException(username, user_id)
 
         # Change osu to standard and fruits to catch for good display
         # Change gamemode emoji for given gamemode
         gamemode_emoji = '<:mania:1512849916706295818>'
-        if gamemode == 'osu': 
+        if gamemode == 'osu':
             gamemode = 'standard'
             gamemode_emoji = '<:standard:1512849884313686107>'
         elif gamemode == 'catch': gamemode_emoji = '<:fruits:1512849871990952047>'
         elif gamemode == 'taiko': gamemode_emoji = '<:taiko:1512849895873052885>'
-        
+
         follower_count  = player_profile['follower_count']
         playmode            = player_profile['playmode']
         user_id             = player_profile['id']
@@ -62,7 +67,7 @@ class osuComands(commands.Cog):
         best_global_rank    = player_profile['rank_highest']['rank']
         best_updtat         = player_profile['rank_highest']['updated_at']
         best_updtat_date    = datetime.fromisoformat(best_updtat)
-        
+
         embed, file = embeds.get_osu_embed()
         embed.title = f'{gamemode_emoji} Osu!{gamemode} information'
         embed.url   = f'https://osu.ppy.sh/users/{user_id}'
@@ -130,4 +135,3 @@ class osuComands(commands.Cog):
 
 async def setup(bot):
     await bot.add_cog(osuComands(bot))
-

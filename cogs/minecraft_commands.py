@@ -4,19 +4,21 @@ from discord.ext import commands
 from datetime import datetime
 from io import BytesIO
 
-from templates import embeds
+from templates import embeds, exceptions
 from utils import minecraft_tools
-
 
 class minecraftCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-    
+
     @app_commands.command(name='minecraft-info', description='Information about a minecraft player')
+    @app_commands.describe(username='The user name')
+    @app_commands.describe(uuid='The user uuid')
     async def minecraft_info(self, interaction: discord.Interaction, username: str = None, uuid: str = None):
-        if username is None and uuid is None: return
+        if username is None and uuid is None: raise exceptions.InvalidInputException('You must provide an **username** or an **uuid**')
 
         player_profile = minecraft_tools.get_player_profile(username, uuid)
+        if not player_profile: raise exceptions.UserNotFoundException(username, uuid)
 
         uuid = player_profile['uuid']
         full_uuid = player_profile['full_uuid']
@@ -61,4 +63,3 @@ class minecraftCommands(commands.Cog):
 
 async def setup(bot):
     await bot.add_cog(minecraftCommands(bot))
-

@@ -3,7 +3,7 @@ from discord import app_commands
 from discord.ext import commands
 from datetime import datetime
 
-from templates import embeds, exceptions
+from templates import embeds, exceptions, emojis
 from utils import roblox_tools
 
 class robloxComands(commands.Cog):
@@ -11,18 +11,23 @@ class robloxComands(commands.Cog):
         self.bot = bot
 
     @app_commands.command(name='roblox-info', description='Information about a roblox player')
+    @app_commands.describe(username='The user name')
+    @app_commands.describe(user_id='The user id')
     async def roblox_info(self, interaction: discord.Interaction, username: str = None, user_id: int = None):
-        if username is None and user_id is None: raise exceptions.InvalidInputException('You must provide an **user_id** or an **username**')
+        if username is None and user_id is None:
+            raise exceptions.InvalidInputException('You must provide an **user_id** or an **username**')
 
         player_profile      = roblox_tools.get_player_profile(username, user_id)
-        if not player_profile: raise exceptions.PlayerNotFoundException(username)
+        if not player_profile:
+            raise exceptions.UserNotFoundException(username, user_id)
         user_id             = player_profile.get('id', None)
         username            = player_profile.get('name', None)
         display_name        = player_profile.get('displayName', None)
         has_verified_badge  = player_profile.get('hasVerifiedBadge', None)
         is_banned           = player_profile.get('isBanned', None)
         description         = player_profile.get('description', None)
-        if description == '': description = None
+        if description == '':
+            description = None
         created             = player_profile.get('created', None)
         created_date        = datetime.fromisoformat(created)
 
@@ -78,15 +83,17 @@ class robloxComands(commands.Cog):
         await interaction.response.send_message(files=[file], embed=embed)
 
     @app_commands.command(name='roblox-badges', description='Show all the badges own by a roblox player')
+    @app_commands.describe(username='The user name')
+    @app_commands.describe(user_id='The user id')
     async def roblox_badges(self, interaction: discord.Interaction, username: str = None, user_id: int = None):
         if username is None and user_id is None: raise exceptions.InvalidInputException('You must provide an **user_id** or an **username**')
         if not username:
             player_profile = roblox_tools.get_player_profile(username, user_id)
-            if not player_profile: raise exceptions.PlayerNotFoundException(username)
+            if not player_profile: raise exceptions.UserNotFoundException(username, user_id)
             username = player_profile.get('name', None)
         if not user_id:
             player_profile = roblox_tools.get_player_profile(username, user_id)
-            if not player_profile: raise exceptions.PlayerNotFoundException(username)
+            if not player_profile: raise exceptions.UserNotFoundException(username, user_id)
             user_id = player_profile.get('id', None)
 
         badge_list = roblox_tools.get_player_badges(user_id)
@@ -147,15 +154,17 @@ class robloxComands(commands.Cog):
         await interaction.response.send_message(embed=embed, files=[file], view=NavigationButtons())
 
     @app_commands.command(name='roblox-outfit', description='Show the outfit of a roblox player')
+    @app_commands.describe(username='The user name')
+    @app_commands.describe(user_id='The user id')
     async def roblox_outfit(self, interaction: discord.Interaction, username: str = None, user_id: int = None):
         if username is None and user_id is None: raise exceptions.InvalidInputException('You must provide an **user_id** or an **username**')
         if not username:
             player_profile = roblox_tools.get_player_profile(username, user_id)
-            if not player_profile: raise exceptions.PlayerNotFoundException(username)
+            if not player_profile: raise exceptions.UserNotFoundException(username, user_id)
             username = player_profile.get('name', None)
         if not user_id:
             player_profile = roblox_tools.get_player_profile(username, user_id)
-            if not player_profile: raise exceptions.PlayerNotFoundException(username)
+            if not player_profile: raise exceptions.UserNotFoundException(username, user_id)
             user_id = player_profile.get('id', None)
 
         player_outfit = roblox_tools.get_player_full_body(user_id)["data"][0]
@@ -353,9 +362,92 @@ class robloxComands(commands.Cog):
 
         await interaction.response.send_message(embed=embed, files=[file], view=SelectionButtons())
 
+    @app_commands.command(name='roblox-place-info', description='Information about a roblox place')
+    @app_commands.describe(place_id='The place id')
+    async def roblox_place_info(self, interaction: discord.Interaction, place_id: int):
+        if place_id is None: raise exceptions.InvalidInputException('You must provide a **place_id**')
+
+        place_info      = roblox_tools.get_place_info(place_id).get('data')[0]
+        if not place_info: raise exceptions.PlaceNotFoundException(place_id)
+
+        id              = place_info.get('rootPlaceId')
+        name            = place_info.get('name')
+        description     = place_info.get('description')
+        price           = place_info.get('price')
+        playing         = place_info.get('playing')
+        visits          = place_info.get('visits')
+        server_size     = place_info.get('maxPlayers')
+        favorites       = place_info.get('favoritedCount')
+
+        created         = place_info.get('created')
+        created_date    = datetime.fromisoformat(str(created))
+        updated         = place_info.get('updated')
+        updated_date    = datetime.fromisoformat(str(updated))
+
+        copying_allowed = place_info.get('copyingAllowed')
+
+        genre = place_info.get('genre_l1')
+        subgenre = place_info.get('genre_l2')
+
+        creator     = place_info.get('creator')
+        creator_name= creator.get('name')
+        creator_id  = creator.get('id')
+        creator_type= creator.get('type')
+        is_verified    = creator.get('hasVerifiedBadge')
+
+        thumbnail = roblox_tools.get_place_thumbnail(place_id).get('data')[0]
+        thumbnail_url = thumbnail.get('imageUrl')
+
+        place_url   = 'https://roblox.com' + place_info.get('canonicalUrlPath')
+
+        n_description = ''
+        split_description = description.split('\n')
+        n_description += split_description[0]
+        for i in range(0, len(split_description)-1):
+            n_description += f'\n> {split_description[i+1]}'
+
+        embed, file = embeds.get_roblox_embed()
+        embed.title = f'Roblox place information'
+        embed.url   = place_url
+        embed.add_field(
+            name="Place",
+            value=(
+                f"> **Name:** `{name}`"
+                f"\n> **Place id:** `{id}`"
+                f"\n> **Active:** `{playing}`"
+                f"\n> **Visits:** `{visits}`"
+                f"\n> **Favorite:** `{favorites}`"
+                f"\n> **Server size:** `{server_size}`"
+                f"\n> **Created:** `{created_date}`"
+                f"\n> **Updated:** `{updated_date}`"
+                f"\n> **Genre:** `{genre}`"
+                f"\n> **Subgenre:** `{subgenre}`"
+                f"{f'\n> **{emojis.emoji_dict.get('robux')}:** `{price}`' if price else ''}"
+                f"\n> **Description:** ```{n_description} ```"
+            ),
+            inline=True
+        )
+        embed.add_field(
+            name=(
+                "Creator"
+                f" {emojis.emoji_dict.get('verified_badge') if is_verified else ""}"
+            ),
+            value=(
+                f"> **Name:** `{creator_name}`"
+                f"\n> **Id:** `{creator_id}`"
+                f"\n> **Type:** `{creator_type}`"
+            ),
+            inline=False
+        )
+        embed.set_thumbnail(
+            url=thumbnail_url
+        )
+        await interaction.response.send_message(files=[file], embed=embed)
+
     @roblox_info.error
     @roblox_badges.error
     @roblox_outfit.error
+    @roblox_place_info.error
     async def say_error(self, interaction: discord.Interaction, error):
 
         await interaction.response.send_message(embed=embeds.make_error_embed(error), ephemeral=True)

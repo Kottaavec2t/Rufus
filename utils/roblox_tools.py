@@ -37,6 +37,17 @@ def get_user_followers(userId: int):
 def get_user_followings(userId: int):
     return get_api_data(f'https://friends.roblox.com/v1/users/{userId}/followings/count', headers=HEADER).json()
 
+def get_place_info(placeId: int):
+    params = {
+        'placeIds': [placeId],
+    }
+    universeId = get_api_data('https://games.roblox.com/v1/games/multiget-place-details', params=params, headers=HEADER).json()[0].get('universeId')
+
+    params = {
+        'universeIds': [universeId],
+    }
+    return get_api_data('https://games.roblox.com/v1/games', params=params, headers=HEADER).json()
+
 # Thumbnails
 def get_player_full_body(userId: int, size: str = '720x720', format: str = 'Png', isCircular: bool = False):
     params = {
@@ -74,6 +85,16 @@ def get_asset_thumbnail(assetId: int, size: str = '700x700', format: str = 'Png'
         'isCircular': isCircular,
     }
     return get_api_data(f'https://thumbnails.roblox.com/v1/assets', params=params, headers=HEADER).json()
+
+def get_place_thumbnail(placeId: int, size: str = '512x512', format: str = 'Png', isCircular: bool = False):
+    params = {
+        'placeIds': placeId,
+        'returnPolicy': 'PlaceHolder',
+        'size': size,
+        'format': format,
+        'isCircular': isCircular,
+    }
+    return get_api_data(f'https://thumbnails.roblox.com/v1/places/gameicons', params=params, headers=HEADER).json()
 
 # Inventory
 def get_ouftfit_details(userId: int = None):

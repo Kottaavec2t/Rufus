@@ -1,4 +1,5 @@
 emoji_dict = {
+    'robux': '<:robux:1521892279869247599:>',
     'medium_demon_mythic': '<:medium_demon_mythic:1520834290810617876>',
     'medium_demon_legendary': '<:medium_demon_legendary:1520834289640542339>',
     'medium_demon_epic': '<:medium_demon_epic:1520834288445034639>',
